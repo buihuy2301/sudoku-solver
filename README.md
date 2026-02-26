@@ -55,7 +55,7 @@ uv sync
 Launch the interactive Streamlit application:
 
 ```bash
-streamlit run app.py
+uv run streamlit run app.py
 ```
 
 Then open your browser to `http://localhost:8501`
@@ -223,9 +223,6 @@ Contributions are welcome! Please:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## Authors
-
-[Add your name/team here]
 
 ## Acknowledgments
 
