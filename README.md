@@ -209,9 +209,6 @@ class MyCustomSolver(SolverBase):
 - **streamlit** - Web interface
 - **pytest** - Testing framework
 
-## License
-
-[Add your license here]
 
 ## Contributing
 
