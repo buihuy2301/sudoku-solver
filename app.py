@@ -279,6 +279,7 @@ class SudokuVisualizerApp:
                     st.session_state.animate_now = True
 
             # Animation controls (moved to control panel)
+            max_steps = 0
             if st.session_state.solver and st.session_state.solver.step_history:
                 st.divider()
                 max_steps = len(st.session_state.solver.step_history)
