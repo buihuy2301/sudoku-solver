@@ -51,6 +51,9 @@ st.markdown(
         font-size: 80px;
         border: 1px solid #ccc;
     }
+    .sudoku-board-small .sudoku-cell {
+        font-size: 20px;
+    }
     .cell-given {
         background-color: #e8e8e8;
         color: #000;
@@ -143,12 +146,22 @@ class SudokuVisualizerApp:
         current_step_history: Optional[List[Tuple[int, int, int]]] = None,
         current_step_index: int = 0,
         title: str = "Sudoku Board",
+        size: str = "large",
     ):
-        """Display the Sudoku board with colored cells."""
+        """Display the Sudoku board with colored cells.
+        
+        Args:
+            board: SudokuBoard to display
+            current_step_history: Optional list of (row, col, value) tuples
+            current_step_index: Current step in animation
+            title: Board title
+            size: "large" for single algorithm view, "small" for comparison view
+        """
         st.subheader(title)
 
         # Create the HTML grid
-        html = '<div class="sudoku-board">'
+        board_class = "sudoku-board-small" if size == "small" else ""
+        html = f'<div class="sudoku-board {board_class}">'
 
         assigned_cells = set()
         if current_step_history:
@@ -380,7 +393,7 @@ class SudokuVisualizerApp:
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-            self.display_board(st.session_state.original_board, title="")
+            self.display_board(st.session_state.original_board, title="", size="small")
 
         # Solve button
         cols = st.columns(5)
@@ -412,7 +425,7 @@ class SudokuVisualizerApp:
             ):
                 with cols[idx]:
                     st.markdown(f"**{algo_name}**")
-                    self.display_board(result["board"], title="")
+                    self.display_board(result["board"], title="", size="small")
 
                     if result["stats"]["solved"]:
                         st.success("✓ Solved")
