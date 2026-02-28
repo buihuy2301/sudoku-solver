@@ -523,17 +523,14 @@ class SudokuVisualizerApp:
                     "🔄 Generate with Custom Clues", use_container_width=True
                 )
 
-            if not use_custom:
-                if st.sidebar.button(
-                    "🔄 Generate & Load Sample",
-                    key="load_sample",
-                    use_container_width=True,
-                ):
-                    use_custom = False
-            else:
-                use_custom = True
+            # Check if "Generate & Load Sample" button is clicked
+            load_sample_clicked = st.sidebar.button(
+                "🔄 Generate & Load Sample",
+                key="load_sample",
+                use_container_width=True,
+            )
 
-            if use_custom or st.session_state.get("generate_sample"):
+            if use_custom or load_sample_clicked:
                 with st.spinner("Generating puzzle..."):
                     try:
                         # Generate a new puzzle each time
