@@ -47,8 +47,8 @@ st.markdown(
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: bold;
-        font-size: 18px;
+        font-weight: 400;
+        font-size: 80px;
         border: 1px solid #ccc;
     }
     .cell-given {
