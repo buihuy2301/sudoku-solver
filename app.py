@@ -163,17 +163,17 @@ class SudokuVisualizerApp:
         board_class = "sudoku-board-small" if size == "small" else ""
         html = f'<div class="sudoku-board {board_class}">'
 
-        assigned_cells = set()
-        if current_step_history:
-            assigned_cells = {
-                (r, c) for r, c, _ in current_step_history[:current_step_index]
-            }
+        # Get the most recently assigned cell (current step)
+        last_assigned_cell = None
+        if current_step_history and current_step_index > 0:
+            last_row, last_col, _ = current_step_history[current_step_index - 1]
+            last_assigned_cell = (last_row, last_col)
 
         for row in range(9):
             for col in range(9):
                 value = board.board[row][col]
                 is_given = st.session_state.original_board.board[row][col] != 0
-                is_current = (row, col) in assigned_cells if assigned_cells else False
+                is_current = (row, col) == last_assigned_cell
 
                 # Determine cell class
                 if is_given:
