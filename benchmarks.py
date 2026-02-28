@@ -51,7 +51,7 @@ class BenchmarkSuite:
             "easy": exemplars.get("easy", ""),
             "medium": exemplars.get("medium", ""),
             "hard": exemplars.get("hard", ""),
-            "expert": exemplars.get("expert", "").replace(".", "0"),
+            "very_hard": exemplars.get("expert", "").replace(".", "0"),
         }
 
         # Add additional test puzzles

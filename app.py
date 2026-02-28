@@ -19,7 +19,8 @@ from sudoku_solver.algorithms.backtracking_mrv import BacktrackingMRVSolver
 from sudoku_solver.algorithms.dancing_links import DancingLinksSolver
 from sudoku_solver.algorithms.naked_singles import NakedSinglesSolver
 from sudoku_solver.core.sudoku import SudokuBoard
-from sudoku_solver.utils.puzzle_loader import PuzzleLoader
+from sudoku_solver.utils.puzzle_loader import PuzzleLoader, PuzzleGenerator
+from sudoku_solver.utils.validators import Validators
 
 # Page configuration
 st.set_page_config(
@@ -86,24 +87,8 @@ class SudokuVisualizerApp:
         "Dancing Links": DancingLinksSolver,
     }
 
-    # Sample puzzles
-    SAMPLE_PUZZLES = {
-        "Easy": (
-            "530070000600195000098000060800060003400803001700020006"
-            "060000280000419005000080079"
-        ),
-        "Medium": (
-            "004080050700001000000600002200040600030000090008090007300007000000200003040060900"
-        ),
-        "Hard": (
-            "100007090030020008009600500005300900010080002600004000"
-            "300000010040000007007000300"
-        ),
-        "Very Hard": (
-            "008000200190300005000007109700900000000501003020040060"
-            "060080040000000000504000600"
-        ),
-    }
+    # Sample puzzle difficulty levels (will be generated dynamically)
+    PUZZLE_DIFFICULTIES = ["Easy", "Medium", "Hard", "Very Hard"]
 
     def __init__(self):
         """Initialize the application."""
@@ -132,9 +117,16 @@ class SudokuVisualizerApp:
             st.session_state.animate_now = False
 
     def load_puzzle(self, puzzle_str: str):
-        """Load a puzzle from string."""
+        """Load a puzzle from string with validation."""
         try:
             board = PuzzleLoader.from_string(puzzle_str)
+            
+            # Validate the puzzle
+            is_valid, error_msg = Validators.is_valid_puzzle(board)
+            if not is_valid:
+                st.error(f"Invalid Sudoku puzzle: {error_msg}")
+                return False
+            
             st.session_state.original_board = board.copy()
             st.session_state.board = board.copy()
             st.session_state.current_step = 0
@@ -496,12 +488,25 @@ class SudokuVisualizerApp:
         )
 
         if input_method == "Sample Puzzle":
-            sample = st.sidebar.selectbox(
-                "Select Sample", list(self.SAMPLE_PUZZLES.keys()), key="sample_select"
+            difficulty = st.sidebar.selectbox(
+                "Select Difficulty", self.PUZZLE_DIFFICULTIES, key="difficulty_select"
             )
-            if st.sidebar.button("Load Sample", key="load_sample"):
-                self.load_puzzle(self.SAMPLE_PUZZLES[sample])
-                st.rerun()
+            if st.sidebar.button("🔄 Generate & Load Sample", key="load_sample"):
+                with st.spinner(f"Generating {difficulty} puzzle..."):
+                    try:
+                        # Generate a new puzzle each time
+                        puzzle = PuzzleGenerator.generate(difficulty.lower().replace(" ", "_"))
+                        # Convert board to string format
+                        puzzle_str = "".join(
+                            str(puzzle.board[r][c])
+                            for r in range(9)
+                            for c in range(9)
+                        )
+                        if self.load_puzzle(puzzle_str):
+                            st.success(f"✓ Generated {difficulty} puzzle")
+                            st.rerun()
+                    except Exception as e:
+                        st.error(f"Error generating puzzle: {e}")
 
         elif input_method == "Paste String":
             puzzle_str = st.sidebar.text_area(
