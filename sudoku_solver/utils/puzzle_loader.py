@@ -225,17 +225,17 @@ class PuzzleGenerator:
 
         # Number of cells to remove based on difficulty
         cells_to_remove = {
-            "easy": 35,      # ~46 clues given
-            "medium": 45,    # ~36 clues given
-            "hard": 50,      # ~31 clues given
-            "very_hard": 55,    # ~26 clues given
+            "easy": 35,  # ~46 clues given
+            "medium": 45,  # ~36 clues given
+            "hard": 50,  # ~31 clues given
+            "very_hard": 55,  # ~26 clues given
         }
 
         max_attempts = 5  # Try up to 5 times to generate valid puzzle
         for attempt in range(max_attempts):
             # Generate complete board
             complete_board = PuzzleGenerator._generate_complete_board()
-            
+
             # Create puzzle by removing cells
             puzzle_grid = [row[:] for row in complete_board.board]
             cells_removed = 0
@@ -273,4 +273,3 @@ class PuzzleGenerator:
         # Fallback: return a puzzle even if uniqueness check is uncertain
         final_board = SudokuBoard(puzzle_grid)
         return final_board
-
