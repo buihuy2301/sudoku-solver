@@ -123,13 +123,13 @@ class SudokuVisualizerApp:
         """Load a puzzle from string with validation."""
         try:
             board = PuzzleLoader.from_string(puzzle_str)
-            
+
             # Validate the puzzle
             is_valid, error_msg = Validators.is_valid_puzzle(board)
             if not is_valid:
                 st.error(f"Invalid Sudoku puzzle: {error_msg}")
                 return False
-            
+
             st.session_state.original_board = board.copy()
             st.session_state.board = board.copy()
             st.session_state.current_step = 0
@@ -149,7 +149,7 @@ class SudokuVisualizerApp:
         size: str = "large",
     ):
         """Display the Sudoku board with colored cells.
-        
+
         Args:
             board: SudokuBoard to display
             current_step_history: Optional list of (row, col, value) tuples
@@ -501,22 +501,57 @@ class SudokuVisualizerApp:
         )
 
         if input_method == "Sample Puzzle":
+            st.sidebar.write("**Choose puzzle difficulty:**")
+
             difficulty = st.sidebar.selectbox(
-                "Select Difficulty", self.PUZZLE_DIFFICULTIES, key="difficulty_select"
+                "Difficulty Level", self.PUZZLE_DIFFICULTIES, key="difficulty_select"
             )
-            if st.sidebar.button("🔄 Generate & Load Sample", key="load_sample"):
-                with st.spinner(f"Generating {difficulty} puzzle..."):
+
+            st.sidebar.divider()
+            st.sidebar.write("**Or set custom clues:**")
+
+            with st.sidebar.form("custom_clues_form", clear_on_submit=False):
+                custom_clues = st.number_input(
+                    "Number of Given Cells",
+                    min_value=15,
+                    max_value=54,
+                    value=36,
+                    step=1,
+                    help="15 = Very Hard, 36 = Medium, 54 = Easy",
+                )
+                use_custom = st.form_submit_button(
+                    "🔄 Generate with Custom Clues", use_container_width=True
+                )
+
+            if not use_custom:
+                if st.sidebar.button(
+                    "🔄 Generate & Load Sample",
+                    key="load_sample",
+                    use_container_width=True,
+                ):
+                    use_custom = False
+            else:
+                use_custom = True
+
+            if use_custom or st.session_state.get("generate_sample"):
+                with st.spinner("Generating puzzle..."):
                     try:
                         # Generate a new puzzle each time
-                        puzzle = PuzzleGenerator.generate(difficulty.lower().replace(" ", "_"))
+                        if use_custom:
+                            puzzle = PuzzleGenerator.generate(given_cells=custom_clues)
+                            clue_label = f"{custom_clues} clues"
+                        else:
+                            puzzle = PuzzleGenerator.generate(
+                                difficulty.lower().replace(" ", "_")
+                            )
+                            clue_label = difficulty
+
                         # Convert board to string format
                         puzzle_str = "".join(
-                            str(puzzle.board[r][c])
-                            for r in range(9)
-                            for c in range(9)
+                            str(puzzle.board[r][c]) for r in range(9) for c in range(9)
                         )
                         if self.load_puzzle(puzzle_str):
-                            st.success(f"✓ Generated {difficulty} puzzle")
+                            st.success(f"✓ Generated puzzle with {clue_label}")
                             st.rerun()
                     except Exception as e:
                         st.error(f"Error generating puzzle: {e}")

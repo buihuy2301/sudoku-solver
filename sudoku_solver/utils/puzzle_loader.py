@@ -205,31 +205,41 @@ class PuzzleGenerator:
         return True
 
     @staticmethod
-    def generate(difficulty: str = "medium") -> SudokuBoard:
+    def generate(difficulty: str = "medium", given_cells: int = None) -> SudokuBoard:
         """
-        Generate a valid Sudoku puzzle of specified difficulty.
+        Generate a valid Sudoku puzzle of specified difficulty or custom clue count.
 
         Args:
-            difficulty: One of "easy", "medium", "hard", "very_hard"
+            difficulty: One of "easy", "medium", "hard", "very_hard" (ignored if given_cells is set)
+            given_cells: Override difficulty with exact number of clues (15-54). If None, uses difficulty level.
 
         Returns:
             A valid SudokuBoard puzzle
 
         Raises:
-            ValueError: If difficulty level is invalid
+            ValueError: If difficulty level or given_cells is invalid
         """
-        if difficulty not in ["easy", "medium", "hard", "very_hard"]:
-            raise ValueError(
-                f"Difficulty must be easy, medium, hard, or very_hard, got {difficulty}"
-            )
+        # Use custom given_cells if provided
+        if given_cells is not None:
+            if not isinstance(given_cells, int) or given_cells < 15 or given_cells > 54:
+                raise ValueError(
+                    f"given_cells must be an integer between 15 and 54, got {given_cells}"
+                )
+            cells_to_remove = 81 - given_cells
+        else:
+            if difficulty not in ["easy", "medium", "hard", "very_hard"]:
+                raise ValueError(
+                    f"Difficulty must be easy, medium, hard, or very_hard, got {difficulty}"
+                )
 
-        # Number of cells to remove based on difficulty
-        cells_to_remove = {
-            "easy": 35,  # ~46 clues given
-            "medium": 45,  # ~36 clues given
-            "hard": 50,  # ~31 clues given
-            "very_hard": 55,  # ~26 clues given
-        }
+            # Number of cells to remove based on difficulty
+            cells_to_remove_map = {
+                "easy": 35,  # ~46 clues given
+                "medium": 45,  # ~36 clues given
+                "hard": 50,  # ~31 clues given
+                "very_hard": 55,  # ~26 clues given
+            }
+            cells_to_remove = cells_to_remove_map[difficulty]
 
         max_attempts = 5  # Try up to 5 times to generate valid puzzle
         for attempt in range(max_attempts):
@@ -239,7 +249,7 @@ class PuzzleGenerator:
             # Create puzzle by removing cells
             puzzle_grid = [row[:] for row in complete_board.board]
             cells_removed = 0
-            target_removals = cells_to_remove[difficulty]
+            target_removals = cells_to_remove
 
             # Randomly remove cells while maintaining validity
             positions = [(r, c) for r in range(9) for c in range(9)]
