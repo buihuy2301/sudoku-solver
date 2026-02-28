@@ -1,6 +1,8 @@
 """Backtracking with Minimum Remaining Values (MRV) heuristic."""
 
 from typing import Optional, Tuple
+import time
+import copy
 
 from ..core.solver_base import SudokuSolver
 
@@ -41,11 +43,11 @@ class BacktrackingMRVSolver(SudokuSolver):
 
         row, col = cell
         candidates = self.board.get_candidates(row, col)
-
         if not candidates:
             # No valid candidates for this cell = contradiction
             return False
-
+        
+        # time.sleep(0.1)
         # Try each candidate value
         for value in sorted(candidates):
             # Place value
@@ -54,7 +56,7 @@ class BacktrackingMRVSolver(SudokuSolver):
             self.guesses += 1
 
             # Update candidates for peers
-            old_candidates = self.board.candidates[row][col]
+            old_candidates = copy.deepcopy(self.board.candidates)
             self.board.candidates[row][col] = set()
             self.board._remove_candidates_for_value(row, col, value)
 
@@ -64,9 +66,9 @@ class BacktrackingMRVSolver(SudokuSolver):
 
             # Backtrack
             self.board.board[row][col] = 0
-            self.board.candidates[row][col] = old_candidates
+            self.board.candidates = old_candidates
             # Restore candidates (simplified - just reinitialize for cell)
-            self._restore_candidates_on_backtrack(row, col, value)
+            #self._restore_candidates_on_backtrack(row, col, value)
             self.backtracks += 1
 
         return False
@@ -101,20 +103,36 @@ class BacktrackingMRVSolver(SudokuSolver):
             value: Value that was removed
         """
         # Recalculate candidates for this cell
-        self.board.candidates[row][col] = set(range(1, 10))
+        # self.board.candidates[row][col] = set(range(1, 10))
 
         # Remove values in row, column, and box
-        for c in range(9):
-            if c != col and self.board.board[row][c] != 0:
-                self.board.candidates[row][col].discard(self.board.board[row][c])
+        # for c in range(9):
+        #     if c != col and self.board.board[row][c] != 0:
+        #         self.board.candidates[row][col].discard(self.board.board[row][c])
 
-        for r in range(9):
-            if r != row and self.board.board[r][col] != 0:
-                self.board.candidates[row][col].discard(self.board.board[r][col])
+        # for r in range(9):
+        #     if r != row and self.board.board[r][col] != 0:
+        #         self.board.candidates[row][col].discard(self.board.board[r][col])
 
-        box_row = (row // 3) * 3
-        box_col = (col // 3) * 3
-        for r in range(box_row, box_row + 3):
-            for c in range(box_col, box_col + 3):
-                if (r != row or c != col) and self.board.board[r][c] != 0:
-                    self.board.candidates[row][col].discard(self.board.board[r][c])
+        # box_row = (row // 3) * 3
+        # box_col = (col // 3) * 3
+        # for r in range(box_row, box_row + 3):
+        #     for c in range(box_col, box_col + 3):
+        #         if (r != row or c != col) and self.board.board[r][c] != 0:
+        #             self.board.candidates[row][col].discard(self.board.board[r][c])
+        for c in range(self.board.GRID_SIZE):
+            if c != col:
+                self.board.candidates[row][c].add(value)
+
+        # Remove from column peers
+        for r in range(self.board.GRID_SIZE):
+            if r != row:
+                self.board.candidates[r][col].add(value)
+
+        # Remove from box peers
+        box_row = (row // self.board.BOX_SIZE) * self.board.BOX_SIZE
+        box_col = (col // self.board.BOX_SIZE) * self.board.BOX_SIZE
+        for r in range(box_row, box_row + self.board.BOX_SIZE):
+            for c in range(box_col, box_col + self.board.BOX_SIZE):
+                if r != row or c != col:
+                    self.board.candidates[r][c].add(value)
